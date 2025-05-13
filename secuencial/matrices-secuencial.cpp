@@ -2,9 +2,11 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
-
+#include <chrono>
+#include <fstream>
 
 using namespace std;
+using namespace chrono;
 
 class Matriz {
 private:
@@ -14,7 +16,8 @@ private:
 public:
     Matriz(int n) : size(n), datos(n, vector<int>(n)) {
         generarAleatorios();
-        }
+    }
+
     void generarAleatorios() {
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
