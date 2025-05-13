@@ -29,4 +29,10 @@ public:
 void sumarFila(const Matriz& matriz, int filaInicio, int filaFin, long long& sumaParcial) {
     long long localSuma = 0;
     for (int i = filaInicio; i < filaFin; ++i) {
-        for (int j = 0; j < matriz.getSze(); +
+        for (int j = 0; j < matriz.getSize(); ++j) {
+            localSuma += matriz.getValor(i, j);
+        }
+    }
+    lock_guard<mutex> lock(mtx);
+    sumaParcial += localSuma;
+}
