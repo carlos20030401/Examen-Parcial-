@@ -4,11 +4,10 @@
 #include <ctime>
 #include <chrono>
 #include <fstream>
-#include <filesystem>  // Para verificar o crear la carpeta
+#include <direct.h>  // Para crear directorios 
 
 using namespace std;
 using namespace chrono;
-namespace fs = std::filesystem;  // Para manipular el sistema de archivos
 
 class Matriz {
 private:
@@ -35,6 +34,11 @@ public:
     }
 };
 
+bool crearDirectorio(const string& path) {
+    // Para crear un directorio, en Windows usamos _mkdir
+    return _mkdir(path.c_str()) == 0;
+}
+
 int main() {
     srand(time(0)); // Semilla para números aleatorios
     int N;
@@ -42,8 +46,9 @@ int main() {
     cin >> N;
 
     // Asegúrate de que la carpeta 'secuencial' exista
-    if (!fs::exists("secuencial")) {
-        fs::create_directory("secuencial");
+    if (!crearDirectorio("secuencial")) {
+        cerr << "No se pudo crear el directorio 'secuencial'.\n";
+        return 1;
     }
 
     ofstream archivo("secuencial/secuencial.csv");
