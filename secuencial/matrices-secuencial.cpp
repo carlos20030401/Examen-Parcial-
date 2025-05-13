@@ -23,3 +23,11 @@ public:
             for (int j = 0; j < size; ++j)
                 datos[i][j] = rand() % 10; // Numeros randoms o aleatorios de 0 a 9
     }
+    int sumarElementos() {
+        int suma = 0;
+        for (int i = 0; i < siz ++i)
+            for (int j = 0; j < size; ++j)
+                suma += datos[j];
+        return suma;
+    }
+};
