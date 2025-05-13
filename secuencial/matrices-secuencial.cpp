@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <vector>
 #include <cstdlib>
@@ -23,11 +24,12 @@ public:
             for (int j = 0; j < size; ++j)
                 datos[i][j] = rand() % 10; // Numeros randoms o aleatorios de 0 a 9
     }
+
     int sumarElementos() {
         int suma = 0;
-        for (int i = 0; i < siz ++i)
+        for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
-                suma += datos[j];
+                suma += datos[i][j];
         return suma;
     }
 };
