@@ -38,3 +38,6 @@ int main() {
     int N;
     cout << "Ingrese el tamano de la matriz cuadrada: ";
     cin >> N;
+
+    ofstream archivo("secuencial/secuencial.csv");
+    if (!archivo.is_open()) {
