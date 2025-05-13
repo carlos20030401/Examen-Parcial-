@@ -4,10 +4,6 @@
 #include <chrono>
 #include <random>
 
-
-using namespace std;
-mutex mtx;  // para proteger el acceso a la suma global
-
 class Matriz {
 private:
     int N;
@@ -21,5 +17,12 @@ public:
             for (int j = 0; j < N; ++j)
                 datos[i][j] = dis(gen);
     }
+
     int getValor(int i, int j) const {
-        return datos[i][j]
+        return datos[i][j];
+    }
+
+    int getSize() const {
+        return N;
+    }
+};
