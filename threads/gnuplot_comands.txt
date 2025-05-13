@@ -1,0 +1,12 @@
+set datafile separator ","
+set title "Tiempo de Ejecución"
+set xlabel "Tamaño de la Matriz"
+set ylabel "Tiempo (segundos)"
+set grid
+plot "threads.csv" using 1:2 with linespoints title "Tiempo"
+
+
+set terminal png size 800,600
+set output "tiempo_matriz.png"
+replot
+set output
