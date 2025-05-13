@@ -4,7 +4,7 @@
 #include <ctime>
 #include <chrono>
 #include <fstream>
-#include <direct.h>  // Para crear directorios 
+#include <direct.h>  // Para crear directorios
 
 using namespace std;
 using namespace chrono;
@@ -22,7 +22,7 @@ public:
     void generarAleatorios() {
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
-                datos[i][j] = rand() % 10; // Números aleatorios de 0 a 9
+                datos[i][j] = rand() % 10; // Numeros aleatorios de 0 a 9
     }
 
     int sumarElementos() {
@@ -35,14 +35,13 @@ public:
 };
 
 bool crearDirectorio(const string& path) {
-    // Para crear un directorio, en Windows usamos _mkdir
     return _mkdir(path.c_str()) == 0;
 }
 
 int main() {
     srand(time(0)); // Semilla para números aleatorios
     int N;
-    cout << "Ingrese el tamaño máximo N de la matriz cuadrada: ";
+    cout << "Ingrese el tamano maximo N de la matriz cuadrada: ";
     cin >> N;
 
     // Asegúrate de que la carpeta 'secuencial' exista
@@ -58,7 +57,7 @@ int main() {
     }
 
     // Escribe los encabezados en el archivo CSV
-    archivo << "Tamaño de matriz,Tiempo de ejecución (ms)\n";
+    archivo << "Tamano de matriz,Tiempo de ejecucion (ms)\n";
 
     for (int n = 1; n <= N; ++n) {
         auto inicio = high_resolution_clock::now();
@@ -76,3 +75,4 @@ int main() {
     archivo.close();
     return 0;
 }
+
