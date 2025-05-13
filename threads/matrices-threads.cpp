@@ -52,3 +52,4 @@ int main() {
         vector<thread> threads
         int filasPorHilo =  / numThreads;
         int resto = n % numThreads;
+        auto inicio = chrono::high_resolution_clock::now();
