@@ -21,3 +21,5 @@ public:
             for (int j = 0; j < N; ++j)
                 datos[i][j] = dis(gen);
     }
+    int getValor(int i, int j) const {
+        return datos[i][j]
