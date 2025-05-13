@@ -33,3 +33,8 @@ public:
         return suma;
     }
 };
+int main() {
+    srand(time(0)); // Aca es el brote para inicialisar con los aleatorios
+    int N;
+    cout << "Ingrese el tamano de la matriz cuadrada: ";
+    cin >> N;
