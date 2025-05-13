@@ -53,3 +53,9 @@ int main() {
         int filasPorHilo =  / numThreads;
         int resto = n % numThreads;
         auto inicio = chrono::high_resolution_clock::now();
+        int inicioFila = 0;
+        for (int i = 0; i < numThreads; ++i) {
+            int finFila = inicioFila + filasPorHilo + (i < resto ? 1 : 0);
+            threads.emplace_back(sumarFila, ref(matriz), inicioFila, finFila, ref(sumaTotal));
+            inicioFila = finFila;
+        }
