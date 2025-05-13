@@ -43,3 +43,12 @@ int main() {
     cin >> N;
     ofstream archivo("threads.csv");
     archivo << "Tamaño de matriz,Tiempo de ejecución (ms)\n";
+
+
+    for (int n = 1; n <= N; ++n) {
+        Matriz matriz(n);
+        long long sumaTotal = 0;
+        int numThreads = thread::hardware_concurrency();
+        vector<thread> threads
+        int filasPorHilo =  / numThreads;
+        int resto = n % numThreads;
