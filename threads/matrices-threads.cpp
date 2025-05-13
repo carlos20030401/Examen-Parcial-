@@ -41,3 +41,5 @@ int main() {
     int N;
     cout << "Ingrese el valor de N: ";
     cin >> N;
+    ofstream archivo("threads.csv");
+    archivo << "Tamaño de matriz,Tiempo de ejecución (ms)\n";
