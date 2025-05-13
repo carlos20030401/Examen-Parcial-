@@ -36,3 +36,8 @@ void sumarFila(const Matriz& matriz, int filaInicio, int filaFin, long long& sum
     lock_guard<mutex> lock(mtx);
     sumaParcial += localSuma;
 }
+
+int main() {
+    int N;
+    cout << "Ingrese el valor de N: ";
+    cin >> N;
