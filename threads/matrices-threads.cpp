@@ -64,3 +64,8 @@ int main() {
         for (auto& t : threads) {
             t.join();
         }
+        auto fin = chrono::high_resolution_clock::now();
+        chrono::duration<double, milli> duracion = fin - inicio;
+
+        archivo << n << "," << duracion.count() << "\n";
+    }
