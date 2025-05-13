@@ -1,13 +1,14 @@
-
 #include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <ctime>
 #include <chrono>
 #include <fstream>
+#include <filesystem>  // Para verificar o crear la carpeta
 
 using namespace std;
 using namespace chrono;
+namespace fs = std::filesystem;  // Para manipular el sistema de archivos
 
 class Matriz {
 private:
@@ -22,7 +23,7 @@ public:
     void generarAleatorios() {
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
-                datos[i][j] = rand() % 10; // Numeros randoms o aleatorios de 0 a 9
+                datos[i][j] = rand() % 10; // Números aleatorios de 0 a 9
     }
 
     int sumarElementos() {
@@ -33,11 +34,40 @@ public:
         return suma;
     }
 };
+
 int main() {
-    srand(time(0)); // Aca es el brote para inicialisar con los aleatorios
+    srand(time(0)); // Semilla para números aleatorios
     int N;
-    cout << "Ingrese el tamano de la matriz cuadrada: ";
+    cout << "Ingrese el tamaño máximo N de la matriz cuadrada: ";
     cin >> N;
+
+    // Asegúrate de que la carpeta 'secuencial' exista
+    if (!fs::exists("secuencial")) {
+        fs::create_directory("secuencial");
+    }
 
     ofstream archivo("secuencial/secuencial.csv");
     if (!archivo.is_open()) {
+        cerr << "No se pudo abrir secuencial.csv para escritura.\n";
+        return 1;
+    }
+
+    // Escribe los encabezados en el archivo CSV
+    archivo << "Tamaño de matriz,Tiempo de ejecución (ms)\n";
+
+    for (int n = 1; n <= N; ++n) {
+        auto inicio = high_resolution_clock::now();
+        Matriz matriz(n);
+        int suma = matriz.sumarElementos();
+        auto fin = high_resolution_clock::now();
+
+        duration<double, milli> duracion = fin - inicio;
+
+        archivo << n << "," << duracion.count() << endl;
+        cout << "Matriz " << n << "x" << n << ": suma = " << suma
+              << ", tiempo = " << duracion.count() << " ms\n";
+    }
+
+    archivo.close();
+    return 0;
+}
