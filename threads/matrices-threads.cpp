@@ -69,3 +69,7 @@ int main() {
 
         archivo << n << "," << duracion.count() << "\n";
     }
+    archivo.close();
+    cout << "Archivo 'threads.csv' generado correctamente.\n";
+    return 0;
+}
