@@ -59,3 +59,8 @@ int main() {
             threads.emplace_back(sumarFila, ref(matriz), inicioFila, finFila, ref(sumaTotal));
             inicioFila = finFila;
         }
+        }
+
+        for (auto& t : threads) {
+            t.join();
+        }
