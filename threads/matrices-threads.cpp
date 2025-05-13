@@ -26,3 +26,7 @@ public:
         return N;
     }
 };
+void sumarFila(const Matriz& matriz, int filaInicio, int filaFin, long long& sumaParcial) {
+    long long localSuma = 0;
+    for (int i = filaInicio; i < filaFin; ++i) {
+        for (int j = 0; j < matriz.getSze(); +
