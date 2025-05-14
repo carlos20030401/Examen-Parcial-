@@ -4,6 +4,10 @@ Este repositorio contiene dos implementaciones para sumar los elementos de matri
 - Programación secuencial (C++)
 - Programación con threads (C++)
 
+Respondiendo a la pregunta del profesor y verificar que el código es confiable 
+
+Pregunta_expo.txt 
+
 ## Estructura
 - latex:
 
