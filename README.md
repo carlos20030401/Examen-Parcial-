@@ -5,15 +5,15 @@ Este repositorio contiene dos implementaciones para sumar los elementos de matri
 - Programación con threads (C++)
 
 ## Estructura
--latex
+- latex:
 latex pdf
--secuencial
+- secuencial:
 matrices-secuencial.cpp
 secuencial.csv
 gnuplot_comandos.txt
 grafica4.png
 matriz-secuencial.exe
--threads
+- threads:
 matrices-threads.cpp
 threads.csv
 gnuplot_comands.txt
