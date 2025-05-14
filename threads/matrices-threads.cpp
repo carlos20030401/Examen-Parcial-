@@ -1,13 +1,66 @@
 #include <iostream>
 #include <vector>
 #include <thread>
-#include <chrono>
-#include <fstream>
+#include <queue>
 #include <mutex>
+#include <condition_variable>
+#include <functional>
+#include <atomic>
+#include <chrono>
 #include <random>
+#include <fstream>
 
 using namespace std;
-mutex mtx;  // para proteger el acceso a la suma global
+
+// ========== ThreadPool integrado ==========
+
+class ThreadPool {
+private:
+    vector<thread> workers;
+    queue<function<void()>> tasks;
+    mutex queue_mutex;
+    condition_variable condition;
+    atomic<bool> stop;
+
+public:
+    ThreadPool(size_t threads) : stop(false) {
+        for (size_t i = 0; i < threads; ++i) {
+            workers.emplace_back([this] {
+                while (true) {
+                    function<void()> task;
+                    {
+                        unique_lock<mutex> lock(this->queue_mutex);
+                        this->condition.wait(lock, [this] {
+                            return this->stop || !this->tasks.empty();
+                        });
+                        if (this->stop && this->tasks.empty())
+                            return;
+                        task = move(this->tasks.front());
+                        this->tasks.pop();
+                    }
+                    task();
+                }
+            });
+        }
+    }
+
+    void enqueue(function<void()> f) {
+        {
+            unique_lock<mutex> lock(queue_mutex);
+            tasks.push(move(f));
+        }
+        condition.notify_one();
+    }
+
+    ~ThreadPool() {
+        stop = true;
+        condition.notify_all();
+        for (thread &worker : workers)
+            worker.join();
+    }
+};
+
+// ========== Clase Matriz ==========
 
 class Matriz {
 private:
@@ -32,48 +85,54 @@ public:
     }
 };
 
-void sumarFila(const Matriz& matriz, int filaInicio, int filaFin, long long& sumaParcial) {
-    long long localSuma = 0;
-    for (int i = filaInicio; i < filaFin; ++i) {
-        for (int j = 0; j < matriz.getSize(); ++j) {
-            localSuma += matriz.getValor(i, j);
-        }
-    }
-    lock_guard<mutex> lock(mtx);
-    sumaParcial += localSuma;
-}
+// ========== Variable global protegida ==========
+
+mutex mtx;
 
 int main() {
     int N;
-    cout << "Ingrese el tamano maximo N de la matriz cuadrada: ";
+    cout << "Ingrese el tamaño máximo N de la matriz cuadrada: ";
     cin >> N;
 
-    ofstream archivo("threads.csv");
+    ofstream archivo("threads_pool.csv");
     archivo << "Tamaño de matriz,Tiempo de ejecución (ms),Suma total\n";
+
+    int maxThreads = thread::hardware_concurrency();
+    maxThreads = maxThreads > 0 ? maxThreads : 4;
+
+    ThreadPool pool(maxThreads);
 
     for (int n = 1; n <= N; ++n) {
         Matriz matriz(n);
         long long sumaTotal = 0;
 
-        int numThreads = thread::hardware_concurrency();
-        numThreads = numThreads > n ? n : numThreads;
-        numThreads = numThreads > 0 ? numThreads : 4;
-
-        vector<thread> threads;
+        int numThreads = min(maxThreads, n);
         int filasPorHilo = n / numThreads;
         int resto = n % numThreads;
 
+        atomic<int> tareasPendientes(0);
         auto inicio = chrono::high_resolution_clock::now();
 
         int inicioFila = 0;
         for (int i = 0; i < numThreads; ++i) {
             int finFila = inicioFila + filasPorHilo + (i < resto ? 1 : 0);
-            threads.emplace_back(sumarFila, ref(matriz), inicioFila, finFila, ref(sumaTotal));
+            tareasPendientes++;
+            pool.enqueue([&, inicioFila, finFila]() {
+                long long localSuma = 0;
+                for (int i = inicioFila; i < finFila; ++i)
+                    for (int j = 0; j < matriz.getSize(); ++j)
+                        localSuma += matriz.getValor(i, j);
+                {
+                    lock_guard<mutex> lock(mtx);
+                    sumaTotal += localSuma;
+                }
+                tareasPendientes--;
+            });
             inicioFila = finFila;
         }
 
-        for (auto& t : threads) {
-            t.join();
+        while (tareasPendientes > 0) {
+            this_thread::sleep_for(chrono::milliseconds(1));
         }
 
         auto fin = chrono::high_resolution_clock::now();
