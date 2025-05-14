@@ -3,3 +3,9 @@ set title "Tiempo de Ejecución en Función del Tamaño de la Matriz"
 set xlabel "Tamaño de la Matriz"
 set ylabel "Tiempo de Ejecución (ms)"
 plot "secuencial.csv" using 1:2 with linespoints title "Tiempo de ejecución"
+
+
+
+set terminal png
+set output 'grafica5.png'
+plot "secuencial.csv" using 1:2 with linespoints title "Tiempo de ejecución"
