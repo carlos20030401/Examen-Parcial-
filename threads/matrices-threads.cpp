@@ -1,18 +1,19 @@
 #include <iostream>
 #include <vector>
 #include <thread>
-#include <queue>
+#include <chrono>
+#include <fstream>
 #include <mutex>
+#include <cstdlib>
+#include <queue>
 #include <condition_variable>
 #include <functional>
 #include <atomic>
-#include <chrono>
-#include <random>
-#include <fstream>
+#include <future>
 
 using namespace std;
 
-// ========== ThreadPool integrado ==========
+// ========== ThreadPool ==========
 
 class ThreadPool {
 private:
@@ -44,12 +45,16 @@ public:
         }
     }
 
-    void enqueue(function<void()> f) {
+    template<class F>
+    auto enqueue(F&& f) -> future<decltype(f())> {
+        auto task = make_shared<packaged_task<decltype(f())()>>(forward<F>(f));
+        future<decltype(f())> res = task->get_future();
         {
             unique_lock<mutex> lock(queue_mutex);
-            tasks.push(move(f));
+            tasks.emplace([task]() { (*task)(); });
         }
         condition.notify_one();
+        return res;
     }
 
     ~ThreadPool() {
@@ -60,7 +65,9 @@ public:
     }
 };
 
-// ========== Clase Matriz ==========
+// ========== Matriz y función de suma ==========
+
+mutex mtx;  // proteger suma global
 
 class Matriz {
 private:
@@ -68,12 +75,9 @@ private:
     vector<vector<int>> datos;
 public:
     Matriz(int n) : N(n), datos(n, vector<int>(n)) {
-        random_device rd;
-        mt19937 gen(rd());
-        uniform_int_distribution<> dis(0, 9);
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
-                datos[i][j] = dis(gen);
+                datos[i][j] = rand() % 10;
     }
 
     int getValor(int i, int j) const {
@@ -83,68 +87,60 @@ public:
     int getSize() const {
         return N;
     }
+
+    void imprimir() const {
+        for (int i = 0; i < N; ++i) {
+            cout << "[ ";
+            for (int j = 0; j < N; ++j)
+                cout << datos[i][j] << " ";
+            cout << "]\n";
+        }
+    }
 };
 
-// ========== Variable global protegida ==========
-
-mutex mtx;
-
-int main() {
-    int N;
-    cout << "Ingrese el tamaño máximo N de la matriz cuadrada: ";
-    cin >> N;
-
-    ofstream archivo("threads_pool.csv");
-    archivo << "Tamaño de matriz,Tiempo de ejecución (ms),Suma total\n";
-
-    int maxThreads = thread::hardware_concurrency();
-    maxThreads = maxThreads > 0 ? maxThreads : 4;
-
-    ThreadPool pool(maxThreads);
-
-    for (int n = 1; n <= N; ++n) {
-        Matriz matriz(n);
-        long long sumaTotal = 0;
-
-        int numThreads = min(maxThreads, n);
-        int filasPorHilo = n / numThreads;
-        int resto = n % numThreads;
-
-        atomic<int> tareasPendientes(0);
-        auto inicio = chrono::high_resolution_clock::now();
-
-        int inicioFila = 0;
-        for (int i = 0; i < numThreads; ++i) {
-            int finFila = inicioFila + filasPorHilo + (i < resto ? 1 : 0);
-            tareasPendientes++;
-            pool.enqueue([&, inicioFila, finFila]() {
-                long long localSuma = 0;
-                for (int i = inicioFila; i < finFila; ++i)
-                    for (int j = 0; j < matriz.getSize(); ++j)
-                        localSuma += matriz.getValor(i, j);
-                {
-                    lock_guard<mutex> lock(mtx);
-                    sumaTotal += localSuma;
-                }
-                tareasPendientes--;
-            });
-            inicioFila = finFila;
+pair<long long, string> sumarFila(const Matriz& matriz, int filaInicio, int filaFin) {
+    long long localSuma = 0;
+    string texto = "t" + to_string(filaInicio + 1) + " = ";
+    for (int i = filaInicio; i < filaFin; ++i) {
+        for (int j = 0; j < matriz.getSize(); ++j) {
+            localSuma += matriz.getValor(i, j);
+            texto += to_string(matriz.getValor(i, j)) + " + ";
         }
-
-        while (tareasPendientes > 0) {
-            this_thread::sleep_for(chrono::milliseconds(1));
-        }
-
-        auto fin = chrono::high_resolution_clock::now();
-        chrono::duration<double, milli> duracion = fin - inicio;
-
-        archivo << n << "," << duracion.count() << "," << sumaTotal << "\n";
-        cout << "Matriz " << n << "x" << n << ": suma = " << sumaTotal
-             << ", tiempo = " << static_cast<int>(duracion.count()) << " ms" << endl;
     }
-
-    archivo.close();
-    return 0;
+    if (!texto.empty()) texto = texto.substr(0, texto.size() - 3); // quitar último +
+    texto += " = " + to_string(localSuma);
+    return {localSuma, texto};
 }
 
+// ========== main ==========
+
+int main() {
+    srand(0); // para que la matriz sea siempre igual
+
+    for (int n = 1; n <= 10; ++n) {
+        Matriz matriz(n);
+        matriz.imprimir();
+
+        long long sumaTotal = 0;
+
+        ThreadPool pool(n);  // un hilo por fila
+        vector<future<pair<long long, string>>> resultados;
+
+        for (int i = 0; i < n; ++i) {
+            resultados.emplace_back(pool.enqueue([&matriz, i] {
+                return sumarFila(matriz, i, i + 1);
+            }));
+        }
+
+        for (auto& f : resultados) {
+            auto [suma, detalle] = f.get();
+            sumaTotal += suma;
+            cout << detalle << endl;
+        }
+
+        cout << "S = " << sumaTotal << "\n\n";
+    }
+
+    return 0;
+}
 

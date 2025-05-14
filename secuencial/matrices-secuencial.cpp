@@ -2,11 +2,8 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
-#include <chrono>
-#include <fstream>
 
 using namespace std;
-using namespace chrono;
 
 class Matriz {
 private:
@@ -24,6 +21,19 @@ public:
                 datos[i][j] = rand() % 10; // Números aleatorios de 0 a 9
     }
 
+    int getValor(int i, int j) const {
+        return datos[i][j];
+    }
+
+    void imprimir() const {
+        for (int i = 0; i < size; ++i) {
+            cout << "[ ";
+            for (int j = 0; j < size; ++j)
+                cout << datos[i][j] << " ";
+            cout << "]\n";
+        }
+    }
+
     int sumarElementos() {
         int suma = 0;
         for (int i = 0; i < size; ++i)
@@ -33,7 +43,8 @@ public:
     }
 };
 
-int main() {
+
+/*int main() {
     srand(time(0)); // Semilla para números aleatorios
     int N;
     cout << "Ingrese el tamano maximo N de la matriz cuadrada: ";
@@ -63,5 +74,19 @@ int main() {
 
     archivo.close();
     return 0;
-}
+}*/
 
+int main() {
+    srand(0); // Semilla fija para generar la misma matriz
+
+    for (int n = 1; n <= 10; ++n) {
+        Matriz matriz(n);
+        cout << "\nMatriz " << n << "x" << n << ":\n";
+        matriz.imprimir();
+        int suma = matriz.sumarElementos();
+        cout << "Secuencial: S = " << suma << "\n";
+    }
+
+    return 0;
+}
+	
